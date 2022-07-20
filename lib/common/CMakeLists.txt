@@ -2,12 +2,13 @@
 # SPDX-FileCopyrightText: 2019-2022 Second State INC
 
 find_package(spdlog QUIET)
+
 if(spdlog_FOUND)
 else()
   FetchContent_Declare(
     spdlog
     GIT_REPOSITORY https://github.com/gabime/spdlog.git
-    GIT_TAG        v1.9.1
+    GIT_TAG        v1.10.0
     GIT_SHALLOW    TRUE
   )
   set(SPDLOG_BUILD_SHARED OFF CACHE BOOL "Build shared library" FORCE)
@@ -30,6 +31,11 @@ else()
   FetchContent_MakeAvailable(spdlog)
   wasmedge_setup_target(spdlog)
 endif()
+
+set_target_properties(spdlog PROPERTIES
+  SPDLOG_FMT_EXTERNAL OFF
+  SPDLOG_FMT_EXTERNAL_HO OFF
+)
 
 wasmedge_add_library(wasmedgeCommon
   hexstr.cpp
