@@ -90,7 +90,24 @@ if(WASMEDGE_BUILD_SHARED_LIB)
     VERSION "${WASMEDGE_CAPI_VERSION}"
     SOVERSION "${WASMEDGE_CAPI_SOVERSION}"
     MSVC_RUNTIME_LIBRARY "MultiThreadedDLL"
+    OUTPUT_NAME wasmedge
   )
+
+  include(CheckCXXSourceRuns)
+  set(CMAKE_REQUIRED_FLAGS "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libwasmedge.lds")
+  set(CMAKE_REQUIRED_QUIET ON)
+  check_cxx_source_runs("int main(){}" support_version_script)
+  unset(CMAKE_REQUIRED_FLAGS)
+  unset(CMAKE_REQUIRED_QUIET)
+  if(support_version_script)
+    set_target_properties(wasmedge_shared PROPERTIES
+      LINK_DEPENDS "${CMAKE_CURRENT_SOURCE_DIR}/libwasmedge.lds"
+    )
+    target_link_options(wasmedge_shared
+      PRIVATE
+      "-Wl,--version-script=${CMAKE_CURRENT_SOURCE_DIR}/libwasmedge.lds"
+    )
+  endif()
 
   target_link_libraries(wasmedge_shared
     PRIVATE
@@ -106,8 +123,6 @@ if(WASMEDGE_BUILD_SHARED_LIB)
     ${PROJECT_BINARY_DIR}/include/api
     ${PROJECT_SOURCE_DIR}/include/api
   )
-
-  set_target_properties(wasmedge_shared PROPERTIES OUTPUT_NAME wasmedge)
 
   install(TARGETS wasmedge_shared
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
