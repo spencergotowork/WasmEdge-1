@@ -226,6 +226,15 @@ jobs:
             output_path: plugins/wasi_nn
             output_bin: libwasmedgePluginWasiNN.so
             build_type: Release
+          - name: WASI-NN OpenVINO
+            tar_name: wasi_nn-openvino
+            backend: OpenVINO
+            system: manylinux2014 x86_64
+            host_runner: ubuntu-latest
+            docker_tag: manylinux2014_x86_64
+            output_path: plugins/wasi_nn
+            output_bin: libwasmedgePluginWasiNN.so
+            build_type: Release
           - name: WASI-Crypto
             tar_name: wasi_crypto
             system: manylinux2014 x86_64
@@ -279,8 +288,15 @@ jobs:
       shell: bash
       if: contains(matrix.name, 'WASI-NN')
       env:
+        OPENVINO_VERSION: "2021.4.582"
+        OPENVINO_YEAR: "2021"
         PYTORCH_VERSION: "1.8.2"
       run: |
+        if [[ "${{ matrix.name }}" == *"OpenVINO"* ]]; then
+          bash utils/wasi-nn/install-openvino.sh
+          source /opt/intel/openvino_2021/bin/setupvars.sh
+          ldconfig
+        fi
         if [[ "${{ matrix.name }}" == *"PyTorch"* ]]; then
           bash utils/wasi-nn/install-pytorch.sh --disable-cxx11-abi
         fi
@@ -300,8 +316,14 @@ jobs:
       shell: bash
       if: contains(matrix.name, 'WASI-NN')
       env:
+        OPENVINO_VERSION: "2021.4.582"
+        OPENVINO_YEAR: "2021"
         TORCH_VERSION: "1.8.2"
       run: |
+        if [[ "${{ matrix.name }}" == *"OpenVINO"* ]]; then
+          source /opt/intel/openvino_2021/bin/setupvars.sh
+          ldconfig
+        fi
         if [[ "${{ matrix.name }}" == *"PyTorch"* ]]; then
           export Torch_DIR=$(pwd)/libtorch
         fi
