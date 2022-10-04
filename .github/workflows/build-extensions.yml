@@ -292,6 +292,7 @@ jobs:
         OPENVINO_YEAR: "2021"
         PYTORCH_VERSION: "1.8.2"
       run: |
+        yum install -y python3
         if [[ "${{ matrix.name }}" == *"OpenVINO"* ]]; then
           bash utils/wasi-nn/install-openvino.sh
           source /opt/intel/openvino_2021/bin/setupvars.sh
