@@ -1,5 +1,12 @@
 //! Defines WasmEdge Vm struct.
 
+#[cfg(all(target_os = "linux", feature = "wasi_nn", target_arch = "x86_64"))]
+use crate::wasi::WasiNnInstance;
+#[cfg(all(target_os = "linux", feature = "wasi_crypto"))]
+use crate::wasi::{
+    WasiCryptoAsymmetricCommonInstance, WasiCryptoCommonInstance, WasiCryptoKxInstance,
+    WasiCryptoSignaturesInstance, WasiCryptoSymmetricInstance,
+};
 #[cfg(target_os = "linux")]
 use crate::WasmEdgeProcessInstance;
 use crate::{
@@ -459,6 +466,71 @@ impl Vm {
         })
     }
 
+    /// Returns the [WasiNnInstance module instance](crate::wasi::WasiNnInstance).
+    #[cfg(all(target_os = "linux", feature = "wasi_nn", target_arch = "x86_64"))]
+    pub fn wasi_nn_module(&mut self) -> WasmEdgeResult<WasiNnInstance> {
+        let inner_wasi_nn_module = self.inner.wasi_nn_module()?;
+
+        Ok(WasiNnInstance {
+            inner: inner_wasi_nn_module,
+        })
+    }
+
+    /// Returns the [WasiCryptoCommonInstance module instance](crate::wasi::WasiCryptoCommonInstance).
+    #[cfg(all(target_os = "linux", feature = "wasi_crypto"))]
+    pub fn wasi_crypto_common_module(&mut self) -> WasmEdgeResult<WasiCryptoCommonInstance> {
+        let inner_wasi_crypto_common_module = self.inner.wasi_crypto_common_module()?;
+
+        Ok(WasiCryptoCommonInstance {
+            inner: inner_wasi_crypto_common_module,
+        })
+    }
+
+    /// Returns the [WasiCryptoAsymmetricCommonInstance module instance](crate::wasi::WasiCryptoAsymmetricCommonInstance).
+    #[cfg(all(target_os = "linux", feature = "wasi_crypto"))]
+    pub fn wasi_crypto_asymmetric_common_module(
+        &mut self,
+    ) -> WasmEdgeResult<WasiCryptoAsymmetricCommonInstance> {
+        let inner_wasi_crypto_asymmetric_common_module =
+            self.inner.wasi_crypto_asymmetric_common_module()?;
+
+        Ok(WasiCryptoAsymmetricCommonInstance {
+            inner: inner_wasi_crypto_asymmetric_common_module,
+        })
+    }
+
+    /// Returns the [WasiCryptoSymmetricInstance module instance](crate::wasi::WasiCryptoSymmetricInstance).
+    #[cfg(all(target_os = "linux", feature = "wasi_crypto"))]
+    pub fn wasi_crypto_symmetric_module(&mut self) -> WasmEdgeResult<WasiCryptoSymmetricInstance> {
+        let inner_wasi_crypto_symmetric_module = self.inner.wasi_crypto_symmetric_module()?;
+
+        Ok(WasiCryptoSymmetricInstance {
+            inner: inner_wasi_crypto_symmetric_module,
+        })
+    }
+
+    /// Returns the [WasiCryptoKxInstance module instance](crate::wasi::WasiCryptoKxInstance).
+    #[cfg(all(target_os = "linux", feature = "wasi_crypto"))]
+    pub fn wasi_crypto_kx_module(&mut self) -> WasmEdgeResult<WasiCryptoKxInstance> {
+        let inner_wasi_crypto_kx_module = self.inner.wasi_crypto_kx_module()?;
+
+        Ok(WasiCryptoKxInstance {
+            inner: inner_wasi_crypto_kx_module,
+        })
+    }
+
+    /// Returns the [WasiCryptoSignaturesInstance module instance](crate::wasi::WasiCryptoSignaturesInstance).
+    #[cfg(all(target_os = "linux", feature = "wasi_crypto"))]
+    pub fn wasi_crypto_signatures_module(
+        &mut self,
+    ) -> WasmEdgeResult<WasiCryptoSignaturesInstance> {
+        let inner_wasi_crypto_signatures_module = self.inner.wasi_crypto_signatures_module()?;
+
+        Ok(WasiCryptoSignaturesInstance {
+            inner: inner_wasi_crypto_signatures_module,
+        })
+    }
+
     /// Checks if the [vm](crate::Vm) contains a named module instance.
     ///
     /// # Argument
@@ -500,12 +572,11 @@ mod tests {
             StatisticsConfigOptions,
         },
         error::HostFuncError,
-        host_function,
         io::WasmVal,
         params,
         types::Val,
-        wat2wasm, AsInstance, Caller, Global, GlobalType, ImportObjectBuilder, Memory, MemoryType,
-        Mutability, RefType, Table, TableType, ValType, WasmValue,
+        wat2wasm, AsInstance, CallingFrame, Global, GlobalType, ImportObjectBuilder, Memory,
+        MemoryType, Mutability, RefType, Table, TableType, ValType, WasmValue,
     };
 
     #[test]
@@ -1240,10 +1311,10 @@ mod tests {
         assert_eq!(returns[0].to_i32(), 8)
     }
 
-    #[host_function]
     fn real_add(
-        _: &Caller,
+        _frame: &CallingFrame,
         inputs: Vec<WasmValue>,
+        _data: *mut std::os::raw::c_void,
     ) -> std::result::Result<Vec<WasmValue>, HostFuncError> {
         if inputs.len() != 2 {
             return Err(HostFuncError::User(1));

@@ -1,4 +1,4 @@
-name: wasmedge-types-release
+name: wasmedge-macro-release
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.head_ref || github.ref }}
@@ -22,7 +22,7 @@ jobs:
       - name: Set up build environment
         run: |
           sudo apt-get update
-          sudo apt-get install -y software-properties-common cmake libboost-all-dev llvm-12-dev liblld-12-dev ninja-build
+          sudo apt-get install -y software-properties-common libboost-all-dev llvm-12-dev liblld-12-dev ninja-build
           sudo apt-get install -y gcc g++ clang-12
           sudo apt-get install -y libssl-dev pkg-config gh
 
@@ -48,7 +48,7 @@ jobs:
         shell: bash
         working-directory: bindings/rust/
         run: |
-          cargo smart-release --update-crates-index --dry-run-cargo-publish --no-changelog wasmedge-types
+          cargo smart-release --update-crates-index --dry-run-cargo-publish --no-changelog wasmedge-macro
 
       - name: Publish
         if: github.ref == 'refs/heads/master'
@@ -58,7 +58,7 @@ jobs:
         shell: bash
         working-directory: bindings/rust/
         run: |
-          cargo smart-release --update-crates-index --execute --no-changelog wasmedge-types
+          cargo smart-release --update-crates-index --no-changelog --execute wasmedge-macro
 
       - name: Build WasmEdge with Release mode
         run: |
@@ -66,7 +66,7 @@ jobs:
           cmake --build build
 
       - name: Build API document
-        working-directory: bindings/rust/wasmedge-types
+        working-directory: bindings/rust/wasmedge-macro
         run: |
           export WASMEDGE_DIR="$(pwd)/../../../"
           export WASMEDGE_BUILD_DIR="$(pwd)/../../../build"
@@ -80,5 +80,5 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: gh-pages
-          publish_dir: bindings/rust/wasmedge-types/target/doc
+          publish_dir: bindings/rust/wasmedge-macro/target/doc
           force_orphan: true
