@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: Apache-2.0
 # SPDX-FileCopyrightText: 2019-2022 Second State INC
 
-cmake_minimum_required(VERSION 3.10.2)
+cmake_minimum_required(VERSION 3.9.4)
 cmake_policy(SET CMP0091 NEW)
 project(WasmEdge)
 
@@ -136,7 +136,9 @@ set(CPACK_DEBIAN_PACKAGE_SHLIBDEPS ON)
 set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION ON)
 set(CPACK_GENERATOR "${WASMEDGE_BUILD_PACKAGE}")
 set(CPACK_PACKAGE_DESCRIPTION "WasmEdge is a high performance, extensible, and hardware optimized WebAssembly Virtual Machine for cloud, AI, and blockchain applications.")
-
+if(WASMEDGE_BUILD_PLUGINS AND WASMEDGE_BUILD_SHARED_LIB)
+  add_subdirectory(plugins)
+endif()
 if(WASMEDGE_BUILD_TESTS)
   include(CTest)
   add_subdirectory(test)
@@ -144,9 +146,7 @@ endif()
 
 add_subdirectory(include)
 add_subdirectory(lib)
-if(WASMEDGE_BUILD_PLUGINS AND WASMEDGE_BUILD_SHARED_LIB)
-  add_subdirectory(plugins)
-endif()
+
 add_subdirectory(thirdparty)
 if(WASMEDGE_BUILD_TOOLS OR WASMEDGE_BUILD_FUZZING)
   add_subdirectory(tools)
