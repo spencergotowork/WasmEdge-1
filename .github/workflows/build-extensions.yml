@@ -46,7 +46,6 @@ jobs:
     outputs:
       version: ${{ steps.prep.outputs.version }}
     steps:
-
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -95,6 +94,26 @@ jobs:
           - name: WASI-NN OpenVINO
             tar_name: wasi_nn-openvino
             backend: OpenVINO
+            compiler: clang++
+            docker_tag: ubuntu-build-clang
+            output_path: plugins/wasi_nn
+            output_bin: libwasmedgePluginWasiNN.so
+            test_path: test/plugins/wasi_nn
+            test_bin: wasiNNTests
+            build_type: Release
+          - name: WASI-NN TensorFlowLite
+            tar_name: wasi_nn-tensorflowlite
+            backend: TensorFlowLite
+            compiler: g++
+            docker_tag: ubuntu-build-gcc
+            output_path: plugins/wasi_nn
+            output_bin: libwasmedgePluginWasiNN.so
+            test_path: test/plugins/wasi_nn
+            test_bin: wasiNNTests
+            build_type: Release
+          - name: WASI-NN TensorFlowLite
+            tar_name: wasi_nn-tensorflowlite
+            backend: TensorFlowLite
             compiler: clang++
             docker_tag: ubuntu-build-clang
             output_path: plugins/wasi_nn
@@ -233,7 +252,7 @@ jobs:
             build_type: Release
             test: true
           - name: WASI-NN Tensorflow Lite
-            tar_name: wasi_nn-tflite
+            tar_name: wasi_nn-tensorflowlite
             backend: Tensorflowlite
             system: manylinux2014 x86_64
             host_runner: ubuntu-latest
@@ -246,7 +265,7 @@ jobs:
             build_type: Release
             test: true
           - name: WASI-NN Tensorflow Lite
-            tar_name: wasi_nn-tflite
+            tar_name: wasi_nn-tensorflowlite
             backend: Tensorflowlite
             system: manylinux2014 aarch64
             host_runner: linux-arm64
@@ -379,6 +398,28 @@ jobs:
     strategy:
       matrix:
         include:
+          - name: WASI-NN OpenVINO
+            tar_name: wasi_nn-openvino
+            backend: OpenVINO
+            host_runner: macos-11
+            darwin_version: darwin_20
+            output_path: plugins/wasi_nn
+            output_bin: libwasmedgePluginWasiNN.dylib
+            test_path: test/plugins/wasi_nn
+            test_bin: wasiNNTests
+            cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_NN_BACKEND=OpenVINO"
+            build_type: Release
+          - name: WASI-NN OpenVINO
+            tar_name: wasi_nn-openvino
+            backend: OpenVINO
+            host_runner: macos-12
+            darwin_version: darwin_21
+            output_path: plugins/wasi_nn
+            output_bin: libwasmedgePluginWasiNN.dylib
+            test_path: test/plugins/wasi_nn
+            test_bin: wasiNNTests
+            cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_NN_BACKEND=OpenVINO"
+            build_type: Release
           - name: WASI-Crypto
             tar_name: wasi_crypto
             system: MacOS 11
@@ -401,28 +442,6 @@ jobs:
             test_bin: wasiCryptoTests
             build_type: Release
             cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_CRYPTO=ON"
-          - name: WASI-NN OpenVINO
-            tar_name: wasi_nn-openvino
-            backend: OpenVINO
-            host_runner: macos-11
-            darwin_version: darwin_20
-            output_path: plugins/wasi_nn
-            output_bin: libwasmedgePluginWasiNN.dylib
-            test_path: test/plugins/wasi_nn
-            test_bin: wasiNNTests
-            cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_NN_BACKEND=OpenVINO"
-            build_type: Release
-          - name: WASI-NN OpenVINO
-            tar_name: wasi_nn-openvino
-            backend: OpenVINO
-            host_runner: macos-12
-            darwin_version: darwin_21
-            output_path: plugins/wasi_nn
-            output_bin: libwasmedgePluginWasiNN.dylib
-            test_path: test/plugins/wasi_nn
-            test_bin: wasiNNTests
-            cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_NN_BACKEND=OpenVINO"
-            build_type: Release
     name: ${{ matrix.system }} WasmEdge ${{ matrix.name }} plugin with clang++ ${{ matrix.build_type }}
     runs-on: ${{ matrix.host_runner }}
     needs: [get_version_v2]
