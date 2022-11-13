@@ -218,11 +218,11 @@ int Tool(int Argc, const char *Argv[]) noexcept {
   if (ConfForceInterpreter.value()) {
     Conf.getRuntimeConfigure().setForceInterpreter(true);
   }
-
+spdlog::info("the loc is {}", __LINE__);
   for (const auto &Name : ForbiddenPlugins.value()) {
     Conf.addForbiddenPlugins(Name);
   }
-
+spdlog::info("the loc is {}", __LINE__);
   Conf.addHostRegistration(HostRegistration::Wasi);
   Conf.addHostRegistration(HostRegistration::WasmEdge_Process);
   Conf.addHostRegistration(HostRegistration::WasiNN);
@@ -233,20 +233,22 @@ int Tool(int Argc, const char *Argv[]) noexcept {
   Conf.addHostRegistration(HostRegistration::WasiCrypto_Symmetric);
   const auto InputPath = std::filesystem::absolute(SoName.value());
   VM::VM VM(Conf);
-
+spdlog::info("the loc is {}", __LINE__);
   Host::WasiModule *WasiMod = dynamic_cast<Host::WasiModule *>(
       VM.getImportModule(HostRegistration::Wasi));
-
+spdlog::info("the loc is {}", __LINE__);
   if (auto Result = VM.loadWasm(InputPath.u8string()); !Result) {
     return EXIT_FAILURE;
   }
+  spdlog::info("the loc is {}", __LINE__);
   if (auto Result = VM.validate(); !Result) {
     return EXIT_FAILURE;
   }
+  spdlog::info("the loc is {}", __LINE__);
   if (auto Result = VM.instantiate(); !Result) {
     return EXIT_FAILURE;
   }
-
+  spdlog::info("the loc is {}", __LINE__);
   auto HasValidCommandModStartFunc = [&]() {
     bool HasStart = false;
     bool Valid = false;
@@ -270,7 +272,7 @@ int Tool(int Argc, const char *Argv[]) noexcept {
 
     return HasStart && Valid;
   };
-
+spdlog::info("the loc is {}", __LINE__);
   bool EnterCommandMode = !Reactor.value() && HasValidCommandModStartFunc();
 
   WasiMod->getEnv().init(

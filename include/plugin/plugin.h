@@ -148,9 +148,9 @@ public:
 };
 
 struct PluginRegister {
-  PluginRegister(const Plugin::PluginDescriptor *Desc) noexcept;
+  __declspec(dllexport) PluginRegister(const Plugin::PluginDescriptor *Desc) noexcept;
 
-  ~PluginRegister() noexcept;
+  __declspec(dllexport) ~PluginRegister() noexcept;
 };
 
 } // namespace Plugin

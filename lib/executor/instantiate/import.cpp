@@ -71,9 +71,10 @@ checkImportMatched(std::string_view ModName, std::string_view ExtName,
     }
     break;
   default:
+    spdlog::info("this is 74");
     return logUnknownError(ModName, ExtName, ExtType);
   }
-
+spdlog::info("this is 76");
   // Check is error external type or unknown imports.
   if (ModInst.findFuncExports(ExtName)) {
     return logMatchError(ModName, ExtName, ExtType, ExtType,
@@ -91,7 +92,7 @@ checkImportMatched(std::string_view ModName, std::string_view ExtName,
     return logMatchError(ModName, ExtName, ExtType, ExtType,
                          ExternalType::Global);
   }
-
+spdlog::info("this is 94");
   return logUnknownError(ModName, ExtName, ExtType);
 }
 } // namespace
@@ -107,8 +108,11 @@ Expect<void> Executor::instantiate(Runtime::StoreManager &StoreMgr,
     auto ModName = ImpDesc.getModuleName();
     auto ExtName = ImpDesc.getExternalName();
     const auto *TargetModInst = StoreMgr.findModule(ModName);
+    spdlog::info("the address of StoreMgr is {}", fmt::ptr(&StoreMgr));
+    spdlog::info("this is 110");
     if (unlikely(TargetModInst == nullptr)) {
       auto Res = logUnknownError(ModName, ExtName, ExtType);
+      spdlog::info("this is 112");
       if (ModName == "wasi_snapshot_preview1") {
         spdlog::error("    This is a WASI related import. Please ensure that "
                       "you've turned on the WASI configuration.");
@@ -130,8 +134,10 @@ Expect<void> Executor::instantiate(Runtime::StoreManager &StoreMgr,
             "Golang. Please check that you've registered the necessary host "
             "modules from the host programming language.");
       }
+      spdlog::info("this is 136");
       return Res;
     }
+    spdlog::info("this is 139");
     if (auto Res =
             checkImportMatched(ModName, ExtName, ExtType, *TargetModInst);
         unlikely(!Res)) {

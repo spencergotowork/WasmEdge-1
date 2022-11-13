@@ -34,7 +34,7 @@ void VM::unsafeInitVM() {
     ExecutorEngine.registerModule(StoreRef, *WasiMod.get());
     ImpObjs.insert({HostRegistration::Wasi, std::move(WasiMod)});
   }
-
+spdlog::info("at 38 the address of StoreRef is {}", fmt::ptr(&StoreRef));
   // Load the plugins.
   auto loadPlugin = [=](std::string_view PName, HostRegistration Host,
                         std::string_view MName) {
@@ -302,6 +302,8 @@ Expect<void> VM::unsafeInstantiate() {
     spdlog::error(ErrCode::Value::WrongVMWorkflow);
     return Unexpect(ErrCode::Value::WrongVMWorkflow);
   }
+  for(auto &c : StoreRef.getFirstNameMod())
+    spdlog::info("the namemod is {}",c.first);
   if (auto Res = ExecutorEngine.instantiateModule(StoreRef, *Mod.get())) {
     Stage = VMStage::Instantiated;
     ActiveModInst = std::move(*Res);

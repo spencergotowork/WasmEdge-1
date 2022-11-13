@@ -60,6 +60,10 @@ public:
     return nullptr;
   }
 
+  auto getFirstNameMod() const {
+    return NamedMod;
+  }
+
 private:
   /// \name Mutex for thread-safe.
   mutable std::shared_mutex Mutex;
