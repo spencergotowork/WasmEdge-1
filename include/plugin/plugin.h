@@ -159,8 +159,9 @@ public:
 };
 
 extern "C" {
-  struct PluginRegister {
-  WASMEDGE_CAPI_PLUGIN_EXPORT PluginRegister(const Plugin::PluginDescriptor *Desc) noexcept;
+struct PluginRegister {
+  WASMEDGE_CAPI_PLUGIN_EXPORT
+  PluginRegister(const Plugin::PluginDescriptor *Desc) noexcept;
 
   WASMEDGE_CAPI_PLUGIN_EXPORT ~PluginRegister() noexcept;
 };

@@ -28,7 +28,8 @@ WasmEdge::Runtime::Instance::ModuleInstance *createModule() {
     defined(__TOS_WIN__) || defined(__WINDOWS__) // _WIN32
                               "wasmedgePluginWasiNN" WASMEDGE_LIB_EXTENSION));
 #else
-                              "libwasmedgePluginWasiNN" WASMEDGE_LIB_EXTENSION));
+                              "libwasmedgePluginWasiN"
+                              "N" WASMEDGE_LIB_EXTENSION));
 #endif
   if (const auto *Plugin = WasmEdge::Plugin::Plugin::find("wasi_nn"sv)) {
     if (const auto *Module = Plugin->findModule("wasi_nn"sv)) {

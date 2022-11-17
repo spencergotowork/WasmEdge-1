@@ -27,12 +27,15 @@ namespace WasmEdge {
 
 class Allocator {
 public:
-  WASMEDGE_CAPI_PLUGIN_EXPORT static uint8_t *allocate(uint32_t PageCount) noexcept;
+  WASMEDGE_CAPI_PLUGIN_EXPORT static uint8_t *
+  allocate(uint32_t PageCount) noexcept;
 
-  WASMEDGE_CAPI_PLUGIN_EXPORT static uint8_t *resize(uint8_t *Pointer, uint32_t OldPageCount,
-                         uint32_t NewPageCount) noexcept;
+  WASMEDGE_CAPI_PLUGIN_EXPORT static uint8_t *
+  resize(uint8_t *Pointer, uint32_t OldPageCount,
+         uint32_t NewPageCount) noexcept;
 
-  WASMEDGE_CAPI_PLUGIN_EXPORT static void release(uint8_t *Pointer, uint32_t PageCount) noexcept;
+  WASMEDGE_CAPI_PLUGIN_EXPORT static void release(uint8_t *Pointer,
+                                                  uint32_t PageCount) noexcept;
 
   static uint8_t *allocate_chunk(uint64_t Size) noexcept;
   static void release_chunk(uint8_t *Pointer, uint64_t Size) noexcept;
