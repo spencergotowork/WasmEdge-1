@@ -420,28 +420,29 @@ jobs:
             test_bin: wasiNNTests
             cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_NN_BACKEND=OpenVINO"
             build_type: Release
-          # - name: WASI-Crypto
-          #   tar_name: wasi_crypto
-          #   system: MacOS 11
-          #   host_runner: macos-11
-          #   darwin_version: darwin_20
-          #   output_path: plugins/wasi_crypto
-          #   output_bin: libwasmedgePluginWasiCrypto.dylib
-          #   test_path: test/plugins/wasi_crypto
-          #   test_bin: wasiCryptoTests
-          #   build_type: Release
-          #   cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_CRYPTO=ON"
-          # - name: WASI-Crypto
-          #   tar_name: wasi_crypto
-          #   system: MacOS 12
-          #   host_runner: macos-12
-          #   darwin_version: darwin_21
-          #   output_path: plugins/wasi_crypto
-          #   output_bin: libwasmedgePluginWasiCrypto.dylib
-          #   test_path: test/plugins/wasi_crypto
-          #   test_bin: wasiCryptoTests
-          #   build_type: Release
-          #   cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_CRYPTO=ON"
+          - name: WASI-Crypto
+            tar_name: wasi_crypto
+            system: MacOS 11
+            host_runner: macos-11
+            darwin_version: darwin_20
+            output_path: plugins/wasi_crypto
+            output_bin: libwasmedgePluginWasiCrypto.dylib
+            test_path: test/plugins/wasi_crypto
+            test_bin: wasiCryptoTests
+            build_type: Release
+            cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_CRYPTO=ON"
+          - name: WASI-Crypto
+            tar_name: wasi_crypto
+            system: MacOS 12
+            host_runner: macos-12
+            darwin_version: darwin_21
+            output_path: plugins/wasi_crypto
+            output_bin: libwasmedgePluginWasiCrypto.dylib
+            test_path: test/plugins/wasi_crypto
+            test_bin: wasiCryptoTests
+            build_type: Release
+            cmake_plugin_option: "-DWASMEDGE_PLUGIN_WASI_CRYPTO=ON"
+    allow_failure: true
     name: ${{ matrix.system }} WasmEdge ${{ matrix.name }} plugin with clang++ ${{ matrix.build_type }}
     runs-on: ${{ matrix.host_runner }}
     needs: [get_version_v2]
