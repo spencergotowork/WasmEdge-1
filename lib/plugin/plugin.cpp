@@ -304,8 +304,6 @@ std::vector<std::filesystem::path> Plugin::getDefaultPluginPaths() noexcept {
 bool Plugin::load(const std::filesystem::path &Path) noexcept {
   std::error_code Error;
   auto Status = std::filesystem::status(Path, Error);
-  if (std::filesystem::exists(Path))
-    spdlog::info("the file path exist, and the path is '{}'", Path);
   if (likely(!Error)) {
     if (std::filesystem::is_directory(Status)) {
 
@@ -317,13 +315,11 @@ bool Plugin::load(const std::filesystem::path &Path) noexcept {
         if (Entry.is_regular_file(Error) &&
             EntryPath.extension().u8string() == WASMEDGE_LIB_EXTENSION) {
           Result |= loadFile(EntryPath);
-          spdlog::info("the code run at {}", __LINE__);
         }
       }
       return Result;
     } else if (std::filesystem::is_regular_file(Status) &&
                Path.extension().u8string() == WASMEDGE_LIB_EXTENSION) {
-      spdlog::info("the code run at {}", __LINE__);
       return loadFile(Path);
     }
   }
@@ -332,11 +328,9 @@ bool Plugin::load(const std::filesystem::path &Path) noexcept {
 
 bool Plugin::loadFile(const std::filesystem::path &Path) noexcept {
   const auto Index = PluginRegistory.size();
-  spdlog::info("at {}, the PluginRegistory.size is {}", __LINE__,
-               PluginRegistory.size());
+
   auto Lib = std::make_shared<Loader::SharedLibrary>();
   if (auto Res = Lib->load(Path); unlikely(!Res)) {
-    spdlog::info("the code run at {}", __LINE__);
     return false;
   }
 
@@ -345,13 +339,9 @@ bool Plugin::loadFile(const std::filesystem::path &Path) noexcept {
     if (auto GetDescriptor = Lib->get<decltype(WasmEdge_Plugin_GetDescriptor)>(
             "WasmEdge_Plugin_GetDescriptor");
         unlikely(!GetDescriptor)) {
-      spdlog::info("the GetLastError() at {} is {}", __LINE__, GetLastError());
-      spdlog::info("the code run at {}", __LINE__);
-      spdlog::info("the GetDescriptor is {}", GetDescriptor);
       return false;
     } else if (const auto *Descriptor = GetDescriptor();
                unlikely(!Descriptor)) {
-      spdlog::info("the code run at {}", __LINE__);
       return false;
     } else {
       CAPIPluginRegisters.emplace_back(Descriptor);
@@ -393,9 +383,6 @@ Plugin::registerPlugin(const PluginDescriptor *Desc) noexcept {
 
   const auto Index = PluginRegistory.size();
   PluginRegistory.push_back(Plugin(Desc));
-  spdlog::info("at {}, the PluginRegistory.size() is {}", __LINE__,
-               PluginRegistory.size());
-  spdlog::info("at {}, the name is {}", __LINE__, Desc->Name);
   PluginNameLookup.emplace(Desc->Name, Index);
 
   return;
