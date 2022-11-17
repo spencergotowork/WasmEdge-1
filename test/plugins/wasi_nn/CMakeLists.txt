@@ -5,11 +5,11 @@ wasmedge_add_executable(wasiNNTests
   wasi_nn.cpp
 )
 
-function(DOWNLOAD_FILE_FIXTRUE url filename hashmd5)
+function(DOWNLOAD_FILE_FIXTRUE url filename dstdir hashmd5)
   message(STATUS "Download ${filename} ...")
   file(
     DOWNLOAD ${url}/${filename} 
-    ${CMAKE_CURRENT_BINARY_DIR}/wasinn_openvino_fixtures/${filename}
+    ${CMAKE_CURRENT_BINARY_DIR}/${dstdir}/${filename}
     EXPECTED_MD5 ${hashmd5}
     STATUS DOWNLOAD_RESULT
   )
@@ -24,9 +24,9 @@ foreach(BACKEND ${WASMEDGE_PLUGIN_WASI_NN_BACKEND})
   if(BACKEND MATCHES "OpenVINO")
     set(openvino_fixtures_url "https://github.com/intel/openvino-rs/raw/v0.3.3/crates/openvino/tests/fixtures/mobilenet")
     message(STATUS "the download dir is ${CMAKE_CURRENT_BINARY_DIR}/wasinn_openvino_fixtures")  
-    DOWNLOAD_FILE_FIXTRUE(${openvino_fixtures_url} "mobilenet.xml" "4ea3a14273587ce5c1662018878f9f90")
-    DOWNLOAD_FILE_FIXTRUE(${openvino_fixtures_url} "mobilenet.bin" "ae096b1f735f1e8e54bac8b2a42303bd")
-    DOWNLOAD_FILE_FIXTRUE(${openvino_fixtures_url} "tensor-1x224x224x3-f32.bgr" "bfca546f4a3b5e6da49b7bd728e2799a")
+    DOWNLOAD_FILE_FIXTRUE(${openvino_fixtures_url} "mobilenet.xml" "wasinn_openvino_fixtures" "4ea3a14273587ce5c1662018878f9f90")
+    DOWNLOAD_FILE_FIXTRUE(${openvino_fixtures_url} "mobilenet.bin" "wasinn_openvino_fixtures" "ae096b1f735f1e8e54bac8b2a42303bd")
+    DOWNLOAD_FILE_FIXTRUE(${openvino_fixtures_url} "tensor-1x224x224x3-f32.bgr" "wasinn_openvino_fixtures" "bfca546f4a3b5e6da49b7bd728e2799a")
 
     add_definitions(-DWASMEDGE_PLUGIN_WASI_NN_BACKEND_OPENVINO)
     find_package(InferenceEngine REQUIRED)
@@ -38,8 +38,8 @@ foreach(BACKEND ${WASMEDGE_PLUGIN_WASI_NN_BACKEND})
   elseif(BACKEND MATCHES "PyTorch")
     message( STATUS "Download ML artifacts to ${CMAKE_CURRENT_BINARY_DIR}/wasinn_pytorch_fixtures") 
     set(pytorch_fixtures_url "https://github.com/second-state/WasmEdge-WASINN-examples/raw/master/pytorch-mobilenet-image")
-    DOWNLOAD_FILE_FIXTRUE(${pytorch_fixtures_url} "mobilenet.pt" "234f446d2446e0f6fd8ed700c0b4b63b")
-    DOWNLOAD_FILE_FIXTRUE(${pytorch_fixtures_url} "image-1x3x224x224.rgb" "551caa6f3b66c1d953655228462570a1")
+    DOWNLOAD_FILE_FIXTRUE(${pytorch_fixtures_url} "mobilenet.pt" "wasinn_pytorch_fixtures" "234f446d2446e0f6fd8ed700c0b4b63b")
+    DOWNLOAD_FILE_FIXTRUE(${pytorch_fixtures_url} "image-1x3x224x224.rgb" "wasinn_pytorch_fixtures" "551caa6f3b66c1d953655228462570a1")
 
     add_definitions(-DWASMEDGE_PLUGIN_WASI_NN_BACKEND_TORCH)
     find_package(Torch REQUIRED)
@@ -47,8 +47,8 @@ foreach(BACKEND ${WASMEDGE_PLUGIN_WASI_NN_BACKEND})
   elseif(BACKEND STREQUAL "Tensorflowlite")
     message( STATUS "Download ML artifacts to ${CMAKE_CURRENT_BINARY_DIR}/wasinn_tflite_fixtures") 
     set(tflite_fixtures_url "https://raw.githubusercontent.com/gusye1234/WasmEdge-WASINN-examples/demo-tflite-image/tflite-birds_v1-image")
-    DOWNLOAD_FILE_FIXTRUE(${tflite_fixtures_url} "lite-model_aiy_vision_classifier_birds_V1_3.tflite" "3e59cc3a99afeeb819c2c38b319a7938")
-    DOWNLOAD_FILE_FIXTRUE(${tflite_fixtures_url} "birdx224x224x3.rgb" "ad51c39cfe35d2ef35c4052b78cb3c55")
+    DOWNLOAD_FILE_FIXTRUE(${tflite_fixtures_url} "lite-model_aiy_vision_classifier_birds_V1_3.tflite" "wasinn_tflite_fixtures" "3e59cc3a99afeeb819c2c38b319a7938")
+    DOWNLOAD_FILE_FIXTRUE(${tflite_fixtures_url} "birdx224x224x3.rgb" "wasinn_tflite_fixtures" "ad51c39cfe35d2ef35c4052b78cb3c55")
 
     add_definitions(-DWASMEDGE_PLUGIN_WASI_NN_BACKEND_TFLITE)
     target_include_directories(wasiNNTests
