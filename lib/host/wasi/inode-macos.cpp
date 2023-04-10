@@ -264,14 +264,16 @@ INode::fdFilestatGet(__wasi_filestat_t &Filestat) const noexcept {
     return WasiUnexpect(Res);
   }
 
-  Filestat.dev = Stat->st_dev;
-  Filestat.ino = Stat->st_ino;
+  // Zeroing out these values to prevent leaking information about the host
+  // environment from special fd such as stdin, stdout and stderr.
+  Filestat.dev = isSpecialFd(Fd) ? 0 : Stat->st_dev;
+  Filestat.ino = isSpecialFd(Fd) ? 0 : Stat->st_ino;
   Filestat.filetype = unsafeFiletype();
-  Filestat.nlink = Stat->st_nlink;
-  Filestat.size = Stat->st_size;
-  Filestat.atim = fromTimespec(Stat->st_atimespec);
-  Filestat.mtim = fromTimespec(Stat->st_mtimespec);
-  Filestat.ctim = fromTimespec(Stat->st_ctimespec);
+  Filestat.nlink = isSpecialFd(Fd) ? 0 : Stat->st_nlink;
+  Filestat.size = isSpecialFd(Fd) ? 0 : Stat->st_size;
+  Filestat.atim = isSpecialFd(Fd) ? 0 : fromTimespec(Stat->st_atimespec);
+  Filestat.mtim = isSpecialFd(Fd) ? 0 : fromTimespec(Stat->st_mtimespec);
+  Filestat.ctim = isSpecialFd(Fd) ? 0 : fromTimespec(Stat->st_ctimespec);
 
   return {};
 }
@@ -446,6 +448,11 @@ WasiExpect<void> INode::fdRead(Span<Span<uint8_t>> IOVs,
   return {};
 }
 
+// Due to the unfortunate design of wasi::fd_readdir, It's nearly impossible to
+// provide a correct implementation. The below implementation is just a
+// workaround for most usages and may not be correct in some edge cases. The
+// readdir entry API is going to be updated to use a stream type, so we don't
+// have to deal with it right now.
 WasiExpect<void> INode::fdReaddir(Span<uint8_t> Buffer,
                                   __wasi_dircookie_t Cookie,
                                   __wasi_size_t &Size) noexcept {
@@ -460,9 +467,10 @@ WasiExpect<void> INode::fdReaddir(Span<uint8_t> Buffer,
     }
   }
 
-  if (unlikely(Cookie != Dir.Cookie)) {
-    Dir.Buffer.clear();
-    seekdir(Dir.Dir, Cookie);
+  if (Cookie == 0) {
+    ::rewinddir(Dir.Dir);
+  } else if (unlikely(Cookie != Dir.Cookie)) {
+    ::seekdir(Dir.Dir, Cookie);
   }
 
   Size = 0;
@@ -474,7 +482,7 @@ WasiExpect<void> INode::fdReaddir(Span<uint8_t> Buffer,
                 Buffer.begin());
       Buffer = Buffer.subspan(NewDataSize);
       Size += NewDataSize;
-      Dir.Buffer.erase(Dir.Buffer.begin(), Dir.Buffer.begin() + NewDataSize);
+      Dir.Buffer.clear();
       if (unlikely(Buffer.empty())) {
         break;
       }
@@ -488,7 +496,7 @@ WasiExpect<void> INode::fdReaddir(Span<uint8_t> Buffer,
       // End of entries
       break;
     }
-    Dir.Cookie = SysDirent->d_seekoff;
+    Dir.Cookie = ::telldir(Dir.Dir);
     std::string_view Name = SysDirent->d_name;
 
     Dir.Buffer.resize(sizeof(__wasi_dirent_t) + Name.size());
@@ -609,7 +617,8 @@ INode::pathFilestatSetTimes(std::string Path, __wasi_timestamp_t ATim,
       SysTimespec[1].tv_nsec = UTIME_OMIT;
     }
 
-    if (auto Res = ::utimensat(Fd, Path.c_str(), SysTimespec, 0);
+    if (auto Res =
+            ::utimensat(Fd, Path.c_str(), SysTimespec, AT_SYMLINK_NOFOLLOW);
         unlikely(Res != 0)) {
       return WasiUnexpect(fromErrNo(errno));
     }
@@ -634,7 +643,7 @@ INode::pathFilestatSetTimes(std::string Path, __wasi_timestamp_t ATim,
     NeedFile = true;
   }
 
-  FdHolder Target(::openat(Fd, Path.c_str(), O_RDONLY));
+  FdHolder Target(::openat(Fd, Path.c_str(), O_RDONLY | O_SYMLINK));
   if (unlikely(!Target.ok())) {
     return WasiUnexpect(fromErrNo(errno));
   }
@@ -1182,7 +1191,7 @@ WasiExpect<void> INode::sockSetOpt(__wasi_sock_opt_level_t SockOptLevel,
   return {};
 }
 
-WasiExpect<void> INode::sockGetLoaclAddr(uint8_t *AddressBufPtr,
+WasiExpect<void> INode::sockGetLocalAddr(uint8_t *AddressBufPtr,
                                          uint32_t *PortPtr) const noexcept {
   auto AddrFamilyPtr = getAddressFamily(AddressBufPtr);
   auto AddressPtr = getAddress(AddressBufPtr);
@@ -1485,7 +1494,7 @@ WasiExpect<void> INode::getAddrinfo(std::string_view Node,
   SysHint.ai_flags = toAIFlags(Hint.ai_flags);
   SysHint.ai_family = toAddressFamily(Hint.ai_family);
   SysHint.ai_socktype = toSockType(Hint.ai_socktype);
-  SysHint.ai_protocol = toProtocal(Hint.ai_protocol);
+  SysHint.ai_protocol = toProtocol(Hint.ai_protocol);
   SysHint.ai_addrlen = 0;
   SysHint.ai_addr = nullptr;
   SysHint.ai_canonname = nullptr;
@@ -1509,7 +1518,7 @@ WasiExpect<void> INode::getAddrinfo(std::string_view Node,
     auto &CurAddrinfo = WasiAddrinfoArray[Idx];
     CurAddrinfo->ai_flags = fromAIFlags(SysResItem->ai_flags);
     CurAddrinfo->ai_socktype = fromSockType(SysResItem->ai_socktype);
-    CurAddrinfo->ai_protocol = fromProtocal(SysResItem->ai_protocol);
+    CurAddrinfo->ai_protocol = fromProtocol(SysResItem->ai_protocol);
     CurAddrinfo->ai_family = fromAddressFamily(SysResItem->ai_family);
     CurAddrinfo->ai_addrlen = SysResItem->ai_addrlen;
 
